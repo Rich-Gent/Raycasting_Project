@@ -1,2 +1,2 @@
 # Raycasting_Project
-A simple raycasting project which will be done in Javascript and C
+A simple raycasting project in Javascript and C
