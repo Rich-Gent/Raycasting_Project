@@ -8,8 +8,12 @@ const WINDOW_HEIGHT = MAP_NUM_ROWS * TILE_SIZE;
 const FOV_ANGLE = 60 * (Math.PI/180);
 
 //width of pixel columns
-const WALL_STRIP_WIDTH = 3;
+const WALL_STRIP_WIDTH = 0.1;
 const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH;
+
+//scale minimap
+const MINIMAP_SCALE_FACTOR = 0.2;
+
 
 class Map {
     constructor() {
@@ -43,7 +47,7 @@ class Map {
                 var tileColor = this.grid[i][j] == 1 ? "#222" : "#fff";
                 stroke("#222");
                 fill(tileColor);
-                rect(tileX, tileY, TILE_SIZE, TILE_SIZE);
+                rect(MINIMAP_SCALE_FACTOR*tileX, MINIMAP_SCALE_FACTOR*tileY, MINIMAP_SCALE_FACTOR*TILE_SIZE, MINIMAP_SCALE_FACTOR*TILE_SIZE);
             }
         }
     }
@@ -77,10 +81,10 @@ class Player{
     render(){
         noStroke();
         fill("red");
-        circle(this.x,this.y, this.radius);
+        circle(MINIMAP_SCALE_FACTOR*this.x,MINIMAP_SCALE_FACTOR*this.y, MINIMAP_SCALE_FACTOR*this.radius);
         stroke("red");
         //draw line to see which way we are facing
-        line(this.x,this.y, this.x+Math.cos(this.rotationAngle)*20,this.y+ Math.sin(this.rotationAngle)*20);
+        line(MINIMAP_SCALE_FACTOR*this.x,MINIMAP_SCALE_FACTOR*this.y, MINIMAP_SCALE_FACTOR*(this.x+Math.cos(this.rotationAngle)*20),MINIMAP_SCALE_FACTOR*(this.y+ Math.sin(this.rotationAngle)*20));
     }
 }
 class Ray{
@@ -196,7 +200,7 @@ class Ray{
     }
     render(){
         stroke("purple");
-        line(player.x, player.y, this.wallHitX, this.wallHitY);
+        line(MINIMAP_SCALE_FACTOR*player.x, MINIMAP_SCALE_FACTOR*player.y, MINIMAP_SCALE_FACTOR*this.wallHitX, MINIMAP_SCALE_FACTOR*this.wallHitY);
     }
 }
 var grid = new Map();
@@ -245,6 +249,24 @@ function castAllRays(){
         columnId++;
     }
 }
+
+function render3DProjectedWalls(){
+    //loop through all rays in the array
+    for(var i = 0; i < NUM_RAYS; i++){
+        var ray = rays[i];
+        var rayDistance = ray.distance;
+        //calculate the distance to the projection plane
+        var distanceProjectionPlane = (WINDOW_WIDTH/2)/Math.tan(FOV_ANGLE/2);
+        //projected wall height
+        var wallStripHeight = (TILE_SIZE / rayDistance) * distanceProjectionPlane;
+
+        fill("rgba(255,255,255,1.0)");
+        noStroke();
+        //draw each line with strip width
+        rect(i*WALL_STRIP_WIDTH, (WINDOW_HEIGHT/2)-(wallStripHeight/2), WALL_STRIP_WIDTH,wallStripHeight);
+    }
+}
+
 //keep angle within correct parameters (correct for negative angles)
 function normaliseAngle(angle){
     //dont go beyond 2 PI
@@ -275,7 +297,10 @@ function update() {
 
 function draw() {
     //render all objects frame by frame
+    clear("#111")
     update();
+
+    render3DProjectedWalls();
 
     grid.render();
     for(ray of rays){
