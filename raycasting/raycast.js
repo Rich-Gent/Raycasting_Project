@@ -127,12 +127,12 @@ class Ray{
         var nextHorzTouchX = xIntercept;
         var nextHorzTouchY = yIntercept;
 
-        if(this.isRayFacingUp){
-            nextHorzTouchY--;
-        }
+        //if(this.isRayFacingUp){
+        //    nextHorzTouchY--;
+        //}
         //increment xStep and yStep until we find a wall
         while(nextHorzTouchX >=0 && nextHorzTouchX <= WINDOW_WIDTH && nextHorzTouchY >=0 && nextHorzTouchY<=WINDOW_HEIGHT){
-            if(grid.hasWallAt(nextHorzTouchX,nextHorzTouchY)){
+            if(grid.hasWallAt(nextHorzTouchX,nextHorzTouchY - (this.isRayFacingUp ? 1 : 0))){
                 //found a wall hit
                 foundHorzWallHit = true;
                 horzWallHitX = nextHorzTouchX;
@@ -168,12 +168,12 @@ class Ray{
         var nextVertTouchX = xIntercept;
         var nextVertTouchY = yIntercept;
         //add a pixel to find wall
-        if(this.isRayFacingLeft){
-            nextVertTouchX--;
-        }
+        //if(this.isRayFacingLeft){
+        //    nextVertTouchX--;
+        //}
         //increment xStep and yStep until we find a wall
         while(nextVertTouchX >=0 && nextVertTouchX <= WINDOW_WIDTH && nextVertTouchY >=0 && nextVertTouchY<=WINDOW_HEIGHT){
-            if(grid.hasWallAt(nextVertTouchX,nextVertTouchY)){
+            if(grid.hasWallAt(nextVertTouchX - (this.isRayFacingLeft ? 1:0),nextVertTouchY)){
                 //found a wall hit
                 foundVertWallHit = true;
                 vertWallHitX = nextVertTouchX;
