@@ -8,7 +8,7 @@ const WINDOW_HEIGHT = MAP_NUM_ROWS * TILE_SIZE;
 const FOV_ANGLE = 60 * (Math.PI/180);
 
 //width of pixel columns
-const WALL_STRIP_WIDTH = 0.1;
+const WALL_STRIP_WIDTH = 4;
 const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH;
 
 //scale minimap
@@ -103,7 +103,7 @@ class Ray{
         this.isRayFacingRight = (this.rayAngle >(3*Math.PI)/2) || (this.rayAngle<Math.PI/2)
         this.isRayFacingLeft = !this.isRayFacingRight;
     }
-    cast(columnId){
+    cast(){
         var xIntercept, yIntercept;
         var xStep, yStep;
         ////////////////////////////////////////////
@@ -232,8 +232,6 @@ function keyReleased(){
 }
 
 function castAllRays(){
-    var columnId = 0;
-
     //start first ray subtracting half of the FOV
     var rayAngle = player.rotationAngle - (FOV_ANGLE/2);
     rays = [];
@@ -242,11 +240,9 @@ function castAllRays(){
     for(var i=0; i< NUM_RAYS; i++){
         var ray = new Ray(rayAngle);
         //find wall to stop ray
-        ray.cast(columnId);
+        ray.cast();
         rays.push(ray);
-
         rayAngle += FOV_ANGLE / NUM_RAYS;
-        columnId++;
     }
 }
 
@@ -254,13 +250,16 @@ function render3DProjectedWalls(){
     //loop through all rays in the array
     for(var i = 0; i < NUM_RAYS; i++){
         var ray = rays[i];
-        var rayDistance = ray.distance;
+        var rayDistance = ray.distance * Math.cos(ray.rayAngle - player.rotationAngle);
         //calculate the distance to the projection plane
         var distanceProjectionPlane = (WINDOW_WIDTH/2)/Math.tan(FOV_ANGLE/2);
         //projected wall height
         var wallStripHeight = (TILE_SIZE / rayDistance) * distanceProjectionPlane;
+        var alpha = 100/rayDistance;
 
-        fill("rgba(255,255,255,1.0)");
+        var colorIntesity =ray.wasHitVertical? 255: 180;
+
+        fill("rgba("+colorIntesity +","+colorIntesity+","+colorIntesity+","+alpha+")");
         noStroke();
         //draw each line with strip width
         rect(i*WALL_STRIP_WIDTH, (WINDOW_HEIGHT/2)-(wallStripHeight/2), WALL_STRIP_WIDTH,wallStripHeight);
@@ -307,7 +306,7 @@ function draw() {
         ray.render();
     }
     player.render();
-    
+  
 }
 
 
